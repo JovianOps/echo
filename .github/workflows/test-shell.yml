@@ -1,0 +1,51 @@
+name: Test shell
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-shell:
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install
+      - run: git config --global user.name "Test user" && git config --global user.email "someone@example.com"
+      - run: ./node_modules/.bin/bats tests
+
+  test-shell-alpine:
+    name: alpine
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:3.21
+      options: --init
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install tooling
+        shell: sh
+        run: apk add -q bash nodejs npm git diffutils findutils
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: npm install
+      - run: git config --global user.name "Test user" && git config --global user.email "someone@example.com" && git config --global --add safe.directory "${PWD}"
+      - run: ./node_modules/.bin/bats tests
