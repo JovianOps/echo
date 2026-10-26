@@ -34,7 +34,7 @@ jobs:
     name: alpine
     runs-on: ubuntu-latest
     container:
-      image: alpine:3.21
+      image: alpine:3.24
       options: --init
     defaults:
       run:
